@@ -12,6 +12,11 @@ export { ENTRY_URL, PORT, HOST, isReport } from '../../constants'
 
 export const testRunState: Ref<RunState> = ref('idle')
 export const unhandledErrors: Ref<unknown[]> = ref([])
+const filesRef = ref<File[]>([])
+export const files = computed({
+  get: () => filesRef.value,
+  set: files => filesRef.value = files,
+})
 
 export const client = (function createVitestClient() {
   if (isReport) {
@@ -27,6 +32,7 @@ export const client = (function createVitestClient() {
         onFinished(_files, errors) {
           testRunState.value = 'idle'
           unhandledErrors.value = errors || []
+          files.value = _files || []
         },
       },
     })
@@ -35,7 +41,6 @@ export const client = (function createVitestClient() {
 
 export const config = shallowRef<ResolvedConfig>({} as any)
 export const status = ref<WebSocketStatus>('CONNECTING')
-export const files = computed(() => client.state.getFiles())
 export const current = computed(() => files.value.find(file => file.id === activeFileId.value))
 export const currentLogs = computed(() => getTasks(current.value).map(i => i?.logs || []).flat() || [])
 
